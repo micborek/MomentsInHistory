@@ -82,20 +82,6 @@ def lambda_handler(event, context):
                 'body': json.dumps({'error': error_message, 'api_response': response_body})
             }
 
-    except boto3.exceptions.ClientError as e:
-        logger.error(f"Error invoking Bedrock model: {e}")
-        # Check for specific Bedrock errors like access denied or model not found
-        error_code = e.response.get("Error", {}).get("Code")
-        if error_code == "AccessDeniedException":
-            error_message = "Permission denied. Ensure your Lambda role has 'bedrock:InvokeModel' permission."
-        elif error_code == "ValidationException" and "Model not found" in str(e):
-            error_message = f"Bedrock model '{model_id}' not found or not enabled in your account/region."
-        else:
-            error_message = f"AWS Bedrock Client Error: {str(e)}"
-        return {
-            'statusCode': 500,
-            'body': json.dumps({'error': error_message})
-        }
     except Exception as e:
         logger.error(f"An unexpected error occurred: {e}")
         return {

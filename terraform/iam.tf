@@ -33,13 +33,11 @@ resource "aws_iam_policy" "lambda_basic_execution_policy" {
         Effect   = "Allow",
         Resource = "arn:aws:logs:${var.region}:*:*" # Grants access to CloudWatch logs in the specified region
       },
-      # Add other permissions here if your Lambda needs to interact with other services
-      # For example:
-      # {
-      #   Action   = ["s3:GetObject"],
-      #   Effect   = "Allow",
-      #   Resource = "arn:aws:s3:::your-bucket-name/*"
-      # }
+      {
+        Action   = ["bedrock:InvokeModel"],
+        Effect   = "Allow",
+        Resource = "arn:aws:bedrock:${var.region}:*:*"
+      }
     ]
   })
 }
