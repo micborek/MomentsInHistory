@@ -6,6 +6,7 @@ import boto3
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
+
 def lambda_handler(event, context):
     """
     AWS Lambda function to generate a Facebook post using AWS Bedrock.
@@ -23,13 +24,12 @@ def lambda_handler(event, context):
     """
     logger.info(f"Received event: {json.dumps(event)}")
 
-
     # --- AWS Bedrock Configuration ---
     # Bedrock typically uses IAM roles for authentication, not API keys directly in code.
     # Ensure your Lambda function's execution role has permissions to invoke Bedrock models
     # (e.g., 'bedrock:InvokeModel').
     region_name = os.environ.get("AWS_REGION")
-    model_id = "amazon.nova-lite-v1:0"
+    model_id = "amazon.titan-text-express-v1"
 
     try:
         # Initialize Bedrock Runtime client
@@ -44,43 +44,39 @@ def lambda_handler(event, context):
         llm_prompt = (f"Human: Generate a concise and engaging Facebook post about a random event in history. "
                       f"Make it suitable for a general audience and include relevant emojis or hashtags. Keep it under 200 words.\n\nAssistant:")
 
-        # Bedrock payload structure varies by model. This is for Anthropic Claude.
         body = json.dumps({
-            "prompt": llm_prompt,
-            "max_tokens_to_sample": 500, # Max tokens for the response
-            "temperature": 0.9,
-            "top_p": 0.95,
-            "stop_sequences": ["\n\nHuman:"] # Stop generation if Claude tries to act as Human again
+            "inputText": llm_prompt,
+            "textGenerationConfig": {
+                "temperature": 0.9,
+                "topP": 0.9,
+                "maxTokenCount": 500,
+                "stopSequences": []
+            }
         })
 
-        logger.info(f"Invoking Bedrock model '{model_id}' with prompt: {llm_prompt[:100]}...") # Log truncated prompt
-        response = bedrock_runtime.invoke_model(
+        logger.info(f"Invoking Bedrock model '{model_id}' with prompt: {llm_prompt[:100]}...")  # Log truncated prompt
+        response_body = bedrock_runtime.invoke_model(
             modelId=model_id,
             contentType="application/json",
             accept="application/json",
             body=body
         )
 
-        response_body = json.loads(response.get('body').read())
-        logger.info(f"Bedrock API response: {json.dumps(response_body)}")
+        print(f"Input token count: {response_body['inputTextTokenCount']}")
 
-        if 'completion' in response_body:
-            generated_post = response_body['completion'].strip()
-            logger.info("Facebook post generated successfully from Bedrock.")
-            return {
-                'statusCode': 200,
-                'body': json.dumps({
-                    'message': 'Facebook post generated successfully!',
-                    'post_content': generated_post
-                })
-            }
-        else:
-            error_message = "Unexpected response structure from Bedrock API. 'completion' key not found."
-            logger.error(error_message)
-            return {
-                'statusCode': 500,
-                'body': json.dumps({'error': error_message, 'api_response': response_body})
-            }
+        result = response_body['results'][0]
+        print(f"Token count: {result['tokenCount']}")
+        print(f"Output text: {result['outputText']}")
+        print(f"Completion reason: {result['completionReason']}")
+
+        return {
+            'statusCode': 200,
+            'body': json.dumps({
+                'message': 'Facebook post generated successfully!',
+                'post_content': result['outputText']
+            })
+        }
+
 
     except Exception as e:
         logger.error(f"An unexpected error occurred: {e}")
@@ -88,4 +84,3 @@ def lambda_handler(event, context):
             'statusCode': 500,
             'body': json.dumps({'error': f'An unexpected error occurred: {str(e)}'})
         }
-
