@@ -5,7 +5,7 @@ locals {
 resource "null_resource" "install_lambda_dependencies" {
   triggers = {
     dependencies_hash      = filemd5("${local.lambda_source_path}/requirements.txt")
-    code_trigger_file_hash = filemd5("${local.lambda_source_path}/my_lambda_handler.py")
+    code_trigger_file_hash = filemd5("${local.lambda_source_path}/generate_post.py")
   }
 
   provisioner "local-exec" {
