@@ -53,7 +53,7 @@ jobs:
           # 'null_resource' provisioner itself only runs during 'terraform apply' / 'terraform plan'.
           # We need dependencies installed before 'terraform plan' to validate the code.
           # Ensure this path matches the 'locals.lambda_source_path' in your lambda_function.tf.
-          pip install -r "${{ github.workspace }}/lambda-code/requirements.txt" -t "${{ github.workspace }}/lambda-code/"
+          pip install -r "${{ github.workspace }}/src/requirements.txt" -t "${{ github.workspace }}/lambda-code/"
         # This step doesn't run in the TF_WORKING_DIR. It runs at the repo root.
 
       - name: Terraform Validate
