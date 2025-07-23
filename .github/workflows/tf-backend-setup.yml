@@ -1,8 +1,7 @@
-# my-project/.github/workflows/tf-backend-setup.yml
 name: Terraform Backend Setup
 
-on:
-  workflow_dispatch: # Allow manual triggering of the workflow
+#on:
+#  workflow_dispatch: # Allow manual triggering of the workflow - commented out, once backend was set up
 
 permissions:
   id-token: write # Required for OIDC authentication
@@ -18,23 +17,23 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v4 # Action to check out your repository code
+        uses: actions/checkout@v4
 
       - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3 # Action to install Terraform CLI
+        uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: latest
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }} # IAM Role ARN from GitHub Secrets
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Terraform Init (Backend Setup)
         id: init_backend
         run: terraform init
-        working-directory: ./tf-backend-setup # Point to your backend setup directory
+        working-directory: ./tf-backend-setup
 
       - name: Terraform Plan (Backend Setup)
         id: plan_backend
