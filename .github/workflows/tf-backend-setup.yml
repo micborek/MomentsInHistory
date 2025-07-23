@@ -1,0 +1,42 @@
+# my-project/.github/workflows/tf-backend-setup.yml
+name: Terraform Backend Setup
+
+on:
+  workflow_dispatch: # Allow manual triggering of the workflow
+
+env:
+  TF_WORKING_DIR: ./tf-backend-setup # Define the working directory for Terraform commands
+  AWS_REGION: us-west-2      # Define your AWS region (should match your variables.tf default or be overridden)
+
+jobs:
+  # Job to set up the Terraform remote backend infrastructure (S3 bucket, DynamoDB table)
+  setup_backend:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }} # IAM Role ARN from GitHub Secrets
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: latest
+
+      - name: Terraform Init (Backend Setup)
+        id: init_backend
+        run: terraform init
+        working-directory: ./tf-backend-setup # Point to your backend setup directory
+
+      - name: Terraform Plan (Backend Setup)
+        id: plan_backend
+        run: terraform plan -out=backend.tfplan -no-color -input=false
+        working-directory: ./tf-backend-setup
+
+      - name: Terraform Apply (Backend Setup)
+        run: terraform apply -auto-approve backend.tfplan
+        working-directory: ./tf-backend-setup
