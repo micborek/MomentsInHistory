@@ -2,12 +2,13 @@
 name: Terraform AWS Deployment
 
 on:
-  push:
-    branches:
-      - main # Trigger on pushes to the main branch
-    paths:
-      - 'terraform/**' # Only run if changes are in the terraform directory
-      - 'lambda-code/**' # Or if changes are in the lambda-code directory
+# enable below when state lock file placed in s3
+#  push:
+#    branches:
+#      - main # Trigger on pushes to the main branch
+#    paths:
+#      - 'terraform/**' # Only run if changes are in the terraform directory
+#      - 'lambda-code/**' # Or if changes are in the lambda-code directory
   workflow_dispatch: # Allows manual trigger from the GitHub Actions UI
 
 env:
