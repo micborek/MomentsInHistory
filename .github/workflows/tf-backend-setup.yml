@@ -4,6 +4,10 @@ name: Terraform Backend Setup
 on:
   workflow_dispatch: # Allow manual triggering of the workflow
 
+permissions:
+  id-token: write # Required for OIDC authentication
+  contents: read  # Allows checking out code
+
 env:
   TF_WORKING_DIR: ./tf-backend-setup # Define the working directory for Terraform commands
   AWS_REGION: us-west-2      # Define your AWS region (should match your variables.tf default or be overridden)
@@ -13,19 +17,19 @@ jobs:
   setup_backend:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - name: Checkout Repository
+        uses: actions/checkout@v4 # Action to check out your repository code
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3 # Action to install Terraform CLI
+        with:
+          terraform_version: latest
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }} # IAM Role ARN from GitHub Secrets
           aws-region: ${{ env.AWS_REGION }}
-
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
-        with:
-          terraform_version: latest
 
       - name: Terraform Init (Backend Setup)
         id: init_backend
