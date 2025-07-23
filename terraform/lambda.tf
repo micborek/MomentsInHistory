@@ -4,8 +4,8 @@ locals {
 
 resource "null_resource" "install_lambda_dependencies" {
   triggers = {
-    dependencies_hash = filemd5("${local.lambda_source_path}/requirements.txt")
-    source_dir_hash   = filesha256tree(local.lambda_source_path) # Trigger if any source file changes
+    dependencies_hash      = filemd5("${local.lambda_source_path}/requirements.txt")
+    code_trigger_file_hash = filemd5("${local.lambda_source_path}/my_lambda_handler.py")
   }
 
   provisioner "local-exec" {
