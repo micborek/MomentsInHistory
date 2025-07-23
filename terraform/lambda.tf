@@ -9,7 +9,7 @@ resource "null_resource" "install_lambda_dependencies" {
   }
 
   provisioner "local-exec" {
-    command     = "pip install -r src/requirements.txt -t src/"
+    command     = "pip install -r requirements.txt -t ."
     working_dir = local.lambda_source_path
   }
 }
