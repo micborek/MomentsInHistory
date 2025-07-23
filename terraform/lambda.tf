@@ -39,4 +39,10 @@ resource "aws_lambda_function" "generate_posts_lambda" {
   filename = data.archive_file.lambda_zip_package.output_path
   # source_code_hash ensures Terraform detects changes in the zip file content
   source_code_hash = data.archive_file.lambda_zip_package.output_base64sha256
+
+   environment {
+    variables = {
+      AWS_REGION = var.region
+    }
+  }
 }
