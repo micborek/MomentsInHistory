@@ -1,0 +1,76 @@
+# my-project/.github/workflows/terraform.yml
+name: Terraform AWS Deployment
+
+on:
+  push:
+    branches:
+      - main # Trigger on pushes to the main branch
+    paths:
+      - 'terraform/**' # Only run if changes are in the terraform directory
+      - 'lambda-code/**' # Or if changes are in the lambda-code directory
+  workflow_dispatch: # Allows manual trigger from the GitHub Actions UI
+
+env:
+  TF_WORKING_DIR: ./terraform # Define the working directory for Terraform commands
+  AWS_REGION: us-west-2      # Define your AWS region (should match your variables.tf default or be overridden)
+
+jobs:
+  terraform:
+    name: 'Terraform Actions'
+    runs-on: ubuntu-latest # Use a fresh Ubuntu runner for each job
+
+    # Permissions for OIDC authentication. Required when using aws-actions/configure-aws-credentials
+    permissions:
+      id-token: write # This is required for requesting the OIDC token
+      contents: read  # This is required for checkout
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4 # Action to check out your repository code
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3 # Action to install Terraform CLI
+        with:
+          terraform_version: latest
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4 # Action to configure AWS credentials using OIDC
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }} # IAM Role ARN from GitHub Secrets
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Terraform Init
+        id: init
+        run: terraform init -backend-config="region=${{ env.AWS_REGION }}" # Pass region to backend if not hardcoded
+        working-directory: ${{ env.TF_WORKING_DIR }} # Execute command in the terraform directory
+
+      - name: Install Lambda Dependencies (local-exec step from Terraform)
+        id: install_deps
+        run: |
+          # This step mimics the 'null_resource' local-exec provisioner from your Terraform code.
+          # It's explicitly called here because GitHub Actions runs are clean, and the
+          # 'null_resource' provisioner itself only runs during 'terraform apply' / 'terraform plan'.
+          # We need dependencies installed before 'terraform plan' to validate the code.
+          # Ensure this path matches the 'locals.lambda_source_path' in your lambda_function.tf.
+          pip install -r "${{ github.workspace }}/lambda-code/requirements.txt" -t "${{ github.workspace }}/lambda-code/"
+        # This step doesn't run in the TF_WORKING_DIR. It runs at the repo root.
+
+      - name: Terraform Validate
+        id: validate
+        run: terraform validate -no-color
+        working-directory: ${{ env.TF_WORKING_DIR }}
+
+      - name: Terraform Plan
+        id: plan
+        run: terraform plan -no-color -input=false
+        working-directory: ${{ env.TF_WORKING_DIR }}
+        env:
+          TF_VAR_region: ${{ env.AWS_REGION }} # Pass variables if needed, though you have defaults
+
+
+      - name: Terraform Apply
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push' # Only apply on push to main
+        run: terraform apply -auto-approve -input=false
+        working-directory: ${{ env.TF_WORKING_DIR }}
+        env:
+          TF_VAR_region: ${{ env.AWS_REGION }} # Pass variables if needed
