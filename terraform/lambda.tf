@@ -1,18 +1,23 @@
+locals {
+  lambda_source_path = "${path.module}/../src" # This is correct for your structure
+}
+
 resource "null_resource" "install_lambda_dependencies" {
   triggers = {
-    dependencies_hash = filemd5("${path.module}/src/requirements.txt")
-    source_dir_hash   = filesha256tree("${path.module}/src") # Trigger if any source file changes
+    dependencies_hash = filemd5("${local.lambda_source_path}/requirements.txt")
+    source_dir_hash   = filesha256tree(local.lambda_source_path) # Trigger if any source file changes
   }
 
   provisioner "local-exec" {
-    command = "pip install -r src/requirements.txt -t src/"
+    command     = "pip install -r src/requirements.txt -t src/"
+    working_dir = local.lambda_source_path
   }
 }
 
 # Data source to create a .zip archive of the Lambda function code and its dependencies
 data "archive_file" "lambda_zip_package" {
   type        = "zip"
-  source_dir  = "${path.module}/src"
+  source_dir  = local.lambda_source_path
   output_path = "${var.resources_prefix}${var.generate_function_name}.zip"
 
   # Ensure dependencies are installed before archiving
