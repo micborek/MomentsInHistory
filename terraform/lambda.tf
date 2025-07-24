@@ -4,6 +4,8 @@ locals {
 
 resource "null_resource" "install_lambda_dependencies" {
   triggers = {
+    # This trigger will change on every 'terraform apply', forcing a rebuild
+    force_rebuild = timestamp()
     dependencies_hash      = filemd5("${local.lambda_source_path}/requirements.txt")
     code_trigger_file_hash = filemd5("${local.lambda_source_path}/generate_post.py")
   }
@@ -19,10 +21,6 @@ data "archive_file" "lambda_zip_package" {
   type        = "zip"
   source_dir  = local.lambda_source_path
   output_path = "${var.resources_prefix}${var.generate_function_name}.zip"
-
-  triggers = {
-    force_rebuild = timestamp()
-  }
 
   # Ensure dependencies are installed before archiving
   depends_on = [
