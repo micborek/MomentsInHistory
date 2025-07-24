@@ -17,6 +17,13 @@ variable "region" {
   default     = "us-west-2"
 }
 
+# us-west-2 did not reply successfully for on-demand requests for nova lite
+variable "ai_model_region" {
+  description = "Region for the model generating posts"
+  type        = string
+  default     = "us-east-1"
+}
+
 variable "runtime" {
   description = "The runtime for the Lambda functions."
   type        = string

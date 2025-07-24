@@ -7,10 +7,9 @@ from botocore.exceptions import ClientError
 from config import (
     AI_MODEL,
     TEMPERATURE,
-    TOP_P,
     MAX_TOKEN_COUNT,
     STOP_SEQUENCES,
-    DEFAULT_REGION
+    AI_MODEL_REGION
 )
 
 logger = logging.getLogger(__name__)
@@ -21,15 +20,23 @@ def generate_new_post(prompt: str) -> Optional[Dict[str, Any]]:
         # Initialize Bedrock Runtime client
         bedrock_runtime = boto3.client(
             service_name='bedrock-runtime',
-            region_name=os.environ.get("AWS_REGION", DEFAULT_REGION)
+            region_name=AI_MODEL_REGION
         )
         # body structure depends on a used model
         body = json.dumps({
-            "inputText": prompt,
-            "textGenerationConfig": {
+            "messages": [
+                {
+                    "role": "user",
+                    "content": [
+                        {
+                            "text": prompt
+                        }
+                    ]
+                }
+            ],
+            "inferenceConfig": {  # Optional: Customize inference parameters
                 "temperature": TEMPERATURE,
-                "topP": TOP_P,
-                "maxTokenCount": MAX_TOKEN_COUNT,
+                "maxTokens": MAX_TOKEN_COUNT,
                 "stopSequences": STOP_SEQUENCES
             }
         })

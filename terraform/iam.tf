@@ -36,7 +36,7 @@ resource "aws_iam_policy" "lambda_basic_execution_policy" {
       {
         Action   = ["bedrock:InvokeModel"],
         Effect   = "Allow",
-        Resource = "arn:aws:bedrock:${var.region}:*:*"
+        Resource = "arn:aws:bedrock:${var.ai_model_region}:*:*"
       }
     ]
   })
