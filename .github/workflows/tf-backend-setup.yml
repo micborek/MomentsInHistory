@@ -1,8 +1,8 @@
 # my-project/.github/workflows/tf-backend-setup.yml
-name: Terraform Backend Setup
+name: TF Backend Setup
 
 on:
-#  workflow_dispatch: # Allow manual triggering of the workflow - commented out, once backend was set up
+  workflow_dispatch: # Allow manual triggering of the workflow - commented out, once backend was set up
 
 permissions:
   id-token: write # Required for OIDC authentication

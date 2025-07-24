@@ -2,13 +2,11 @@
 
 # Configure the AWS provider
 provider "aws" {
-  region = var.region # Choose your desired region for the backend resources
+  region = var.region
 }
 
-# 1. S3 Bucket for Terraform State
+#S3 Bucket for Terraform State
 resource "aws_s3_bucket" "terraform_state_bucket" {
-  # IMPORTANT: Bucket names must be globally unique.
-  # Choose a unique name, e.g., include your project name and account ID.
   bucket = "${var.resources_prefix}tf-state-bucket"
 
   tags = {
@@ -18,7 +16,6 @@ resource "aws_s3_bucket" "terraform_state_bucket" {
   }
 }
 
-# NEW: Use aws_s3_bucket_versioning for managing bucket versioning
 resource "aws_s3_bucket_versioning" "terraform_state_bucket_versioning" {
   bucket = aws_s3_bucket.terraform_state_bucket.id
   versioning_configuration {
@@ -26,7 +23,6 @@ resource "aws_s3_bucket_versioning" "terraform_state_bucket_versioning" {
   }
 }
 
-# NEW: Use aws_s3_bucket_server_side_encryption_configuration for default encryption
 resource "aws_s3_bucket_server_side_encryption_configuration" "terraform_state_bucket_encryption" {
   bucket = aws_s3_bucket.terraform_state_bucket.id
   rule {
@@ -36,8 +32,6 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "terraform_state_b
   }
 }
 
-# NEW: Use aws_s3_bucket_public_access_block for managing public access settings
-# This resource explicitly blocks all public access to the S3 bucket.
 resource "aws_s3_bucket_public_access_block" "terraform_state_bucket_public_access_block" {
   bucket = aws_s3_bucket.terraform_state_bucket.id
 
@@ -48,12 +42,10 @@ resource "aws_s3_bucket_public_access_block" "terraform_state_bucket_public_acce
 }
 
 
-# 2. DynamoDB Table for State Locking
+# DynamoDB Table for State Locking
 resource "aws_dynamodb_table" "terraform_state_lock" {
-  # Name of the DynamoDB table for state locking
-  # This name is often referenced in the backend configuration
-  name         = "${var.resources_prefix}tf-state-lock" # Replace with a unique name
-  billing_mode = "PAY_PER_REQUEST" # Cost-effective for infrequent locking
+  name         = "${var.resources_prefix}tf-state-lock"
+  billing_mode = "PAY_PER_REQUEST"
 
   # The primary key for the lock table MUST be 'LockID'
   hash_key = "LockID"
@@ -63,7 +55,6 @@ resource "aws_dynamodb_table" "terraform_state_lock" {
     type = "S" # String type
   }
 
-  # Enable server-side encryption for data at rest
   server_side_encryption {
     enabled = true
   }
