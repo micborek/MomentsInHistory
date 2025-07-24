@@ -3,7 +3,6 @@ provider "aws" {
 }
 
 # Backend configuration for state storage
-# This block tells Terraform where to store its state file
 terraform {
   backend "s3" {
     bucket = "moments-in-history-tf-state-bucket"

@@ -2,18 +2,11 @@
 name: Terraform AWS Deployment
 
 on:
-# enable below when state lock file placed in s3
-#  push:
-#    branches:
-#      - main # Trigger on pushes to the main branch
-#    paths:
-#      - 'terraform/**' # Only run if changes are in the terraform directory
-#      - 'lambda-code/**' # Or if changes are in the lambda-code directory
-  workflow_dispatch: # Allows manual trigger from the GitHub Actions UI
+  workflow_dispatch: # Enable only manual runs
 
 env:
-  TF_WORKING_DIR: ./terraform # Define the working directory for Terraform commands
-  AWS_REGION: us-west-2      # Define your AWS region (should match your variables.tf default or be overridden)
+  TF_WORKING_DIR: ./terraform # working directory for Terraform commands
+  AWS_REGION: us-west-2
 
 jobs:
   terraform:
@@ -27,10 +20,10 @@ jobs:
 
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v4 # Action to check out your repository code
+        uses: actions/checkout@v4
 
       - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3 # Action to install Terraform CLI
+        uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: latest
 
@@ -42,18 +35,12 @@ jobs:
 
       - name: Terraform Init
         id: init
-        run: terraform init -backend-config="region=${{ env.AWS_REGION }}" # Pass region to backend if not hardcoded
+        run: terraform init -backend-config="region=${{ env.AWS_REGION }}"
         working-directory: ${{ env.TF_WORKING_DIR }} # Execute command in the terraform directory
 
       - name: Install Lambda Dependencies (local-exec step from Terraform)
         id: install_deps
-        run: |
-          # This step mimics the 'null_resource' local-exec provisioner from your Terraform code.
-          # It's explicitly called here because GitHub Actions runs are clean, and the
-          # 'null_resource' provisioner itself only runs during 'terraform apply' / 'terraform plan'.
-          # We need dependencies installed before 'terraform plan' to validate the code.
-          # Ensure this path matches the 'locals.lambda_source_path' in your lambda_function.tf.
-          pip install -r "${{ github.workspace }}/src/requirements.txt" -t "${{ github.workspace }}/lambda-code/"
+        run: pip install -r "${{ github.workspace }}/src/requirements.txt" -t "${{ github.workspace }}/lambda-code/"
         # This step doesn't run in the TF_WORKING_DIR. It runs at the repo root.
 
       - name: Terraform Validate
@@ -66,11 +53,11 @@ jobs:
         run: terraform plan -out=tfplan -no-color -input=false
         working-directory: ${{ env.TF_WORKING_DIR }}
         env:
-          TF_VAR_region: ${{ env.AWS_REGION }} # Pass variables if needed, though you have defaults
+          TF_VAR_region: ${{ env.AWS_REGION }}
 
 
       - name: Terraform Apply
         run: terraform apply -auto-approve tfplan
         working-directory: ${{ env.TF_WORKING_DIR }}
         env:
-          TF_VAR_region: ${{ env.AWS_REGION }} # Pass variables if needed
+          TF_VAR_region: ${{ env.AWS_REGION }}
