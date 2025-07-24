@@ -7,7 +7,7 @@ AI_MODEL = "amazon.nova-lite-v1:0"
 PROMPT = f"""
 You are a Social Media Historian. Your audience is a general Facebook audience interested in surprising or significant moments from history, presented in an accessible and engaging way. The goal is to spark curiosity and conversation. The post needs to be concise (under 250 words) and end with five relevant hashtags.
 Instructions:
-1.  Choose a historical event that isn't commonly taught or is perhaps a bit unusual, but still has an interesting human element or surprising outcome.
+1.  Choose a historical event that isn't commonly taught or is perhaps a bit unusual - consider events all over history like ancient, medieval and modern times.
 2.  Briefly explain what happened, when, and where. Focus on the most compelling details.
 3.  Highlight why is this event interesting or noteworthy.
 4.  Hashtags: Include 5 relevant hashtags that summarize the content and encourage discoverability.

@@ -10,8 +10,8 @@ secrets_manager_client = boto3.client('secretsmanager')
 
 def post_to_facebook(generated_post: str):
     try:
-        page_id = get_secret(os.environ.get('FACEBOOK_PAGE_ID'))
-        page_access_token = get_secret(os.environ.get('FACEBOOK_PAGE_ACCESS_TOKEN'))
+        page_id = get_secret(os.environ.get('FACEBOOK_PAGE_ID_SECRET_NAME'))
+        page_access_token = get_secret(os.environ.get('FACEBOOK_PAGE_TOKEN_SECRET_NAME'))
 
         post_url = f"https://graph.facebook.com/{GRAPH_API_VERSION}/{page_id}/feed"
         payload = {
