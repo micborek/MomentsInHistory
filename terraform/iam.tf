@@ -26,17 +26,24 @@ resource "aws_iam_policy" "lambda_basic_execution_policy" {
     Statement = [
       {
         Action = [
-          "logs:CreateLogGroup",
           "logs:CreateLogStream",
           "logs:PutLogEvents"
         ],
         Effect   = "Allow",
-        Resource = "arn:aws:logs:${var.region}:*:*" # Grants access to CloudWatch logs in the specified region
+        Resource = aws_cloudwatch_log_group.lambda_log_group.arn
       },
       {
         Action   = ["bedrock:InvokeModel"],
         Effect   = "Allow",
         Resource = "arn:aws:bedrock:${var.ai_model_region}:*:*"
+      },
+      {
+        Effect   = "Allow",
+        Action   = ["secretsmanager:GetSecretValue"],
+        Resource = [
+          aws_secretsmanager_secret.facebook_page_token.arn,
+          aws_secretsmanager_secret.facebook_page_id.arn
+        ]
       }
     ]
   })

@@ -35,6 +35,13 @@ resource "aws_lambda_function" "generate_posts_lambda" {
   timeout       = var.lambda_timeout
   memory_size   = var.lambda_memory_size
 
+  environment {
+    variables = {
+      FACEBOOK_PAGE_TOKEN_SECRET_NAME = aws_secretsmanager_secret.facebook_page_token.name
+      FACEBOOK_PAGE_ID_SECRET_NAME    = aws_secretsmanager_secret.facebook_page_id.name
+    }
+  }
+
   # The filename attribute points to the generated zip file
   filename = data.archive_file.lambda_zip_package.output_path
   # source_code_hash ensures Terraform detects changes in the zip file content
