@@ -9,19 +9,21 @@ You are a Social Media Historian. Your audience is a general Facebook audience i
 Instructions:
 1.  Choose a historical event that isn't commonly taught or is perhaps a bit unusual, but still has an interesting human element or surprising outcome.
 2.  Briefly explain what happened, when, and where. Focus on the most compelling details.
-3.  Highlight why is this event interesting or noteworthy. 
+3.  Highlight why is this event interesting or noteworthy.
 4.  Hashtags: Include 5 relevant hashtags that summarize the content and encourage discoverability.
 
 Output Format: Your response MUST be a valid JSON object with the following keys:
-{ {GENERATED_POST}: "Your engaging Facebook post text goes here (max 300 words).",
-  {TAGS}: [
+{{
+  "{GENERATED_POST}": "Your engaging Facebook post text goes here (max 300 words).",
+  "{TAGS}": [
     "tag1",
     "tag2",
     "tag3",
     "tag4",
     "tag5"
   ],
-  {IMAGE_GENERATION_PROMPT}: "A detailed prompt for image generation AI related to the event."}
+  "{IMAGE_GENERATION_PROMPT}": "A detailed prompt for image generation AI related to the event."
+}}
 """
 TEMPERATURE = 0.8
 MAX_TOKEN_COUNT = 500
