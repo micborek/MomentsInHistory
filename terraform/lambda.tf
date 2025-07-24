@@ -20,6 +20,10 @@ data "archive_file" "lambda_zip_package" {
   source_dir  = local.lambda_source_path
   output_path = "${var.resources_prefix}${var.generate_function_name}.zip"
 
+  triggers = {
+    force_rebuild = timestamp()
+  }
+
   # Ensure dependencies are installed before archiving
   depends_on = [
     null_resource.install_lambda_dependencies
