@@ -26,6 +26,7 @@ resource "aws_iam_policy" "lambda_basic_execution_policy" {
     Statement = [
       {
         Action = [
+          "logs:CreateLogGroup",
           "logs:CreateLogStream",
           "logs:PutLogEvents"
         ],
