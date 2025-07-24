@@ -24,6 +24,7 @@ def lambda_handler(event, context):
         clean_data = extract_generated_data(raw_generated_data)
         # generate an image here to be passed to fb post
 
+        # a comment
         post_to_facebook(clean_data[GENERATED_POST])
 
         return {
