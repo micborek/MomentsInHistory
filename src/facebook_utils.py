@@ -35,7 +35,7 @@ def post_to_facebook(generated_post: str):
         return None
 
 
-def get_secret(secret_name):
+def get_secret(secret_name: str):
     """Retrieves a secret from AWS Secrets Manager."""
     try:
         response = secrets_manager_client.get_secret_value(SecretId=secret_name)
