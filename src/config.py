@@ -4,6 +4,7 @@ TAGS = 'tags'
 IMAGE_GENERATION_PROMPT = 'image_generation_prompt'
 
 AI_MODEL = "amazon.nova-lite-v1:0"
+# TODO: some randomization in prompt is needed/ remove tags key in json
 PROMPT = f"""
 You are a Social Media Historian. Your audience is a general Facebook audience interested in surprising or significant moments from history, presented in an accessible and engaging way. The goal is to spark curiosity and conversation. The post needs to be concise (under 250 words) and end with five relevant hashtags.
 Instructions:
