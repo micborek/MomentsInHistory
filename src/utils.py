@@ -48,7 +48,6 @@ def generate_new_post(prompt: str) -> Optional[Dict[str, Any]]:
             accept="application/json",
             body=body
         )
-        print(reponse)
         response_body_str = response.get("body").read().decode('utf-8')
         response_body = json.loads(response_body_str)
 
