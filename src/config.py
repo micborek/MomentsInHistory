@@ -38,16 +38,19 @@ HISTORICAL_PERIODS = [
 
 AI_MODEL = "amazon.nova-lite-v1:0"
 
-PROMPT = f"""
-You are a Social Media Historian. 
-Your audience is a general Facebook audience interested in surprising or significant moments from history, presented in an accessible and engaging way.  
-The post needs to be concise (under 250 words) and end with five relevant hashtags. It should include some emojis.
+PROMPT_ROLE = "You are a Social Media Historian."
+PROMPT_CONTEXT = """
+Your audience is a general Facebook audience interested in surprising or significant moments from history, presented 
+in an accessible and engaging way. The post needs to be concise (under 250 words) and end with five relevant hashtags. 
+It should include some emojis."""
+PROMPT_PERIOD_INSTRUCTION = "1. Choose a historical event from "
+PROMPT_INSTRUCTIONS = """
 Instructions:
-1.  Choose a historical event from {{historical_period}}
 2.  Briefly explain what happened, when, and where. Focus on the most compelling details.
 3.  Highlight why is this event interesting or noteworthy.
 4.  Include 5 relevant hashtags that summarize the content and encourage discoverability.
-
+"""
+PROMPT_OUTPUT_FORMAT = f"""
 Output Format: Your response MUST be a valid JSON object with the following keys:
 {{
   "{GENERATED_POST}": "Your engaging Facebook post text goes here (max 300 words).",
@@ -67,5 +70,3 @@ STOP_SEQUENCES = []
 
 AI_MODEL_REGION = "us-east-1"
 GRAPH_API_VERSION = "v23.0"
-
-

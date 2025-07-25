@@ -12,7 +12,11 @@ from config import (
     TAGS,
     IMAGE_GENERATION_PROMPT,
     GENERATED_POST,
-    PROMPT
+    PROMPT_ROLE,
+    PROMPT_CONTEXT,
+    PROMPT_PERIOD_INSTRUCTION,
+    PROMPT_INSTRUCTIONS,
+    PROMPT_OUTPUT_FORMAT
 )
 
 logger = logging.getLogger(__name__)
@@ -135,4 +139,5 @@ def extract_generated_data(data: dict) -> Optional[Dict[str, str]]:
 
 
 def prepare_prompt(historical_period):
-    return PROMPT.format(historical_period)
+    logger.info(f"Preparing prompt for: {historical_period}")
+    return PROMPT_ROLE + PROMPT_CONTEXT + PROMPT_PERIOD_INSTRUCTION + historical_period + PROMPT_INSTRUCTIONS + PROMPT_OUTPUT_FORMAT
