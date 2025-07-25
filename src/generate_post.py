@@ -9,7 +9,8 @@ from config import (
 from ai_utils import (
     generate_new_post,
     extract_generated_data,
-    prepare_prompt
+    prepare_prompt,
+    generate_image
 )
 from facebook_utils import post_to_facebook
 
@@ -21,14 +22,17 @@ def lambda_handler(event, context):
     try:
         logger.info(f"Received event: {json.dumps(event)}")
 
-        # generate and extract AI generated data
+        # prepare prompt
         prepared_prompt = prepare_prompt(random.choice(HISTORICAL_PERIODS))
+
+        # generate and extract AI generated data
         raw_generated_data = generate_new_post(prepared_prompt)
         clean_data = extract_generated_data(raw_generated_data)
-        # generate an image here to be passed to fb post
 
-        # a comment
-        # post_to_facebook(clean_data[GENERATED_POST])
+        # generate an image here to be passed to fb post
+        image_bytes = generate_image(clean_data.get(IMAGE_GENERATION_PROMPT))
+
+        post_to_facebook(clean_data.get(GENERATED_POST), image_bytes)
 
         return {
             'statusCode': 200,

@@ -1,6 +1,7 @@
 import boto3
 import json
 import logging
+import base64
 from typing import Optional, Dict, Any
 from botocore.exceptions import ClientError
 from config import (
@@ -9,14 +10,14 @@ from config import (
     MAX_TOKEN_COUNT,
     STOP_SEQUENCES,
     AI_MODEL_REGION,
-    TAGS,
     IMAGE_GENERATION_PROMPT,
     GENERATED_POST,
     PROMPT_ROLE,
     PROMPT_CONTEXT,
     PROMPT_PERIOD_INSTRUCTION,
     PROMPT_INSTRUCTIONS,
-    PROMPT_OUTPUT_FORMAT
+    PROMPT_OUTPUT_FORMAT,
+    DEFAULT_REGION
 )
 
 logger = logging.getLogger(__name__)
@@ -125,14 +126,12 @@ def extract_generated_data(data: dict) -> Optional[Dict[str, str]]:
 
         #  Extract the fields
         generated_post = inner_json[GENERATED_POST]
-        tags = inner_json[TAGS]
         image_generation_prompt = inner_json[IMAGE_GENERATION_PROMPT]
 
         logger.info(f"Generated Post: {generated_post}")
-        logger.info(f"Generated Tags: {tags}")
         logger.info(f"Generated Image Prompt: {image_generation_prompt}")
 
-        return {GENERATED_POST: generated_post, TAGS: tags, IMAGE_GENERATION_PROMPT: image_generation_prompt}
+        return {GENERATED_POST: generated_post, IMAGE_GENERATION_PROMPT: image_generation_prompt}
     except Exception as e:
         logger.error(f'An error occurred while extracting generated data: {e}')
         return None
@@ -141,3 +140,49 @@ def extract_generated_data(data: dict) -> Optional[Dict[str, str]]:
 def prepare_prompt(historical_period):
     logger.info(f"Preparing prompt for: {historical_period}")
     return PROMPT_ROLE + PROMPT_CONTEXT + PROMPT_PERIOD_INSTRUCTION + historical_period + PROMPT_INSTRUCTIONS + PROMPT_OUTPUT_FORMAT
+
+def generate_image(image_prompt:str):
+    # Initialize Bedrock Runtime client
+    bedrock_runtime = boto3.client(
+        service_name='bedrock-runtime',
+        region_name=DEFAULT_REGION
+    )
+
+    body = json.dumps({
+        "text_prompts": [
+            {"text": image_prompt, "weight": 1.0},
+        ],
+        "cfg_scale": 7,
+        "seed": 0,
+        "steps": 50,
+        "width": 1024,
+        "height": 1024,
+        "style-preset": "comic-book"
+    })
+    content_type = "application/json"
+    accept = "application/json"
+
+    model_id = 'stability.sd3-5-large-v1:0'
+    logger.info(f"Invoking Bedrock model {model_id} with prompt: {image_prompt}")
+    response = bedrock_runtime.invoke_model(
+        body=body,
+        modelId=model_id,
+        accept=accept,
+        contentType=content_type
+    )
+
+    response_body = json.loads(response.get('body').read())
+    logger.info(response_body['result'])
+
+    base64_image = response_body["artifacts"][0]["base64"]
+    base64_bytes = base64_image.encode('ascii')
+    image_bytes = base64.b64decode(base64_bytes)
+
+    finish_reason = response_body.get("artifacts")[0].get("finishReason")
+
+    if finish_reason == 'ERROR' or finish_reason == 'CONTENT_FILTERED':
+        logger.error(f"Image generation error. Error code is {finish_reason}")
+
+    logger.info(f"Successfully generated image with {model_id}")
+
+    return image_bytes
