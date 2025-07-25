@@ -61,7 +61,7 @@ def generate_new_post(prompt: str) -> Optional[Dict[str, Any]]:
             }
         })
 
-        logger.info(f"Invoking Bedrock model '{AI_MODEL}' with prompt: {prompt[:80]}...")  # Log truncated prompt
+        logger.info(f"Invoking Bedrock model '{AI_MODEL}' with prompt: {prompt}")
         response = bedrock_runtime.invoke_model(
             modelId=AI_MODEL,
             contentType="application/json",
@@ -93,7 +93,7 @@ def extract_generated_data(data: dict) -> Optional[Dict[str, str]]:
     from the raw response dictionary received from the Bedrock AI model.
 
     This function expects the 'text' content within the Bedrock response
-    to be a JSON string wrapped in markdown code blocks (e.g., ```json\n...\n```).
+    to be a JSON string wrapped in Markdown code blocks (e.g., ```json\n...\n```).
     It parses this inner JSON and extracts specific fields defined by
     `GENERATED_POST`, `TAGS`, and `IMAGE_GENERATION_PROMPT` from the config.
 

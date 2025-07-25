@@ -25,7 +25,7 @@ def lambda_handler(event, context):
         # generate an image here to be passed to fb post
 
         # a comment
-        post_to_facebook(clean_data[GENERATED_POST])
+        # post_to_facebook(clean_data[GENERATED_POST])
 
         return {
             'statusCode': 200,
