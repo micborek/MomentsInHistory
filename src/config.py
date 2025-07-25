@@ -114,7 +114,7 @@ Output Format: Your response MUST be a valid JSON object with the following keys
 
 # --- Facebook Graph API Configuration ---
 GRAPH_API_VERSION = "v23.0"
-PUBLISH_WHEN_POSTED = 'true' # Boolean string for Facebook API (true for immediate publish, false for draft)
+PUBLISH_WHEN_POSTED = 'false' # Boolean string for Facebook API (true for immediate publish, false for draft)
 IMAGE_FILE_NAME = 'image.png' # Default filename for the image when posting to Facebook
 IMAGE_FILE_TYPE = 'image/png' # MIME type of the image file
 

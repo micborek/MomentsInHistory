@@ -3,6 +3,7 @@ import requests
 import logging
 import boto3
 import io
+import json
 from config import (
     GRAPH_API_VERSION,
     PUBLISH_WHEN_POSTED,
@@ -36,7 +37,7 @@ def post_to_facebook(generated_post: str, generated_image: bytes) -> bool | None
         page_id = get_secret(os.environ.get('FACEBOOK_PAGE_ID_SECRET_NAME'))
         page_access_token = get_secret(os.environ.get('FACEBOOK_PAGE_TOKEN_SECRET_NAME'))
 
-        # construct request
+        # construct request for sending the generated photo
         post_url = f"https://graph.facebook.com/{GRAPH_API_VERSION}/{page_id}/photos"
         payload = {
             'message': generated_post,
@@ -51,8 +52,29 @@ def post_to_facebook(generated_post: str, generated_image: bytes) -> bool | None
         response = requests.post(post_url, data=payload, files=files)
         response.raise_for_status()  # Raise an exception for HTTP errors (4xx or 5xx)
         result = response.json()
+        uploaded_photo_id = result.get('id')
+        if not uploaded_photo_id:
+            logger.error(f"Facebook API did not return photo ID after upload: {result}")
+            return None
 
-        logger.info(f"Successfully posted to Facebook Page. Post ID: {result.get('id')}")
+        # construct request to send a generated post with the photo sent earlier
+        feed_post_url = f'https://graph.facebook.com/{GRAPH_API_VERSION}/{page_id}/feed'
+        feed_payload = {
+            'message': generated_post,
+            'access_token': page_access_token,
+            # Attach the photo using its ID.
+            'attached_media': json.dumps([{'media_fbid': uploaded_photo_id}])
+        }
+
+        response = requests.post(feed_post_url, data=feed_payload)
+        response.raise_for_status()
+        feed_result = response.json()
+
+        if 'id' in feed_result:
+            logger.info(f"Successfully posted! View post at: https://www.facebook.com/{feed_result['id'].replace('_', '/posts/')}")
+        else:
+            logger.error(f"Error creating feed post: {feed_result}")
+
         return True
 
     except requests.exceptions.RequestException as e:
