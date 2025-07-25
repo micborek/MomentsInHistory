@@ -4,6 +4,7 @@ import logging
 import boto3
 import io
 import json
+import time
 from config import (
     GRAPH_API_VERSION,
     PUBLISH_WHEN_POSTED,
@@ -56,6 +57,9 @@ def post_to_facebook(generated_post: str, generated_image: bytes) -> bool | None
         if not uploaded_photo_id:
             logger.error(f"Facebook API did not return photo ID after upload: {result}")
             return None
+
+        # add sleep to avoid racing condition
+        time.sleep(1)
 
         # construct request to send a generated post with the photo sent earlier
         feed_post_url = f'https://graph.facebook.com/{GRAPH_API_VERSION}/{page_id}/feed'
