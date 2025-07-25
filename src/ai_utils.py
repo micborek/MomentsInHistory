@@ -152,7 +152,7 @@ def generate_image(image_prompt:str):
         'prompt': image_prompt,
         'aspect_ratio': "16:9",
         'mode': "text-to-image",
-        'output_format': "PNG"
+        'output_format': "png"
 
     })
 
