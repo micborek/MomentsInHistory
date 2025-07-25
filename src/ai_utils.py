@@ -149,40 +149,25 @@ def generate_image(image_prompt:str):
     )
 
     body = json.dumps({
-        "text_prompts": [
-            {"text": image_prompt, "weight": 1.0},
-        ],
-        "cfg_scale": 7,
-        "seed": 0,
-        "steps": 50,
-        "width": 1024,
-        "height": 1024,
-        "style-preset": "comic-book"
+        'prompt': image_prompt,
+        'aspect_ratio': "16:9",
+        'mode': "text-to-image",
+        'output_format': "PNG"
+
     })
-    content_type = "application/json"
-    accept = "application/json"
 
     model_id = 'stability.sd3-5-large-v1:0'
     logger.info(f"Invoking Bedrock model {model_id} with prompt: {image_prompt}")
     response = bedrock_runtime.invoke_model(
         body=body,
         modelId=model_id,
-        accept=accept,
-        contentType=content_type
     )
 
-    response_body = json.loads(response.get('body').read())
-    logger.info(response_body['result'])
+    output_body = json.loads(response["body"].read().decode("utf-8"))
+    base64_output_image = output_body["images"][0]
+    image_data = base64.b64decode(base64_output_image)
 
-    base64_image = response_body["artifacts"][0]["base64"]
-    base64_bytes = base64_image.encode('ascii')
-    image_bytes = base64.b64decode(base64_bytes)
-
-    finish_reason = response_body.get("artifacts")[0].get("finishReason")
-
-    if finish_reason == 'ERROR' or finish_reason == 'CONTENT_FILTERED':
-        logger.error(f"Image generation error. Error code is {finish_reason}")
 
     logger.info(f"Successfully generated image with {model_id}")
 
-    return image_bytes
+    return image_data
