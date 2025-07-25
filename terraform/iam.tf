@@ -45,6 +45,11 @@ resource "aws_iam_policy" "lambda_basic_execution_policy" {
           aws_secretsmanager_secret.facebook_page_token.arn,
           aws_secretsmanager_secret.facebook_page_id.arn
         ]
+      },
+      {
+        Effect = "Allow",
+        Action = ["sns:Publish"],
+        Resource = [aws_sns_topic.email_notifications_topic.arn]
       }
     ]
   })

@@ -50,14 +50,14 @@ jobs:
 
       - name: Terraform Plan
         id: plan
-        run: terraform plan -out=tfplan -no-color -input=false
+        run: terraform plan -out=tfplan -no-color -input=false -var="primary_alert_email_endpoint=${{ secrets.PRIMARY_ALERT_EMAIL }}"
         working-directory: ${{ env.TF_WORKING_DIR }}
         env:
           TF_VAR_region: ${{ env.AWS_REGION }}
 
 
       - name: Terraform Apply
-        run: terraform apply -auto-approve tfplan
+        run: terraform apply -auto-approve tfplan -var="primary_alert_email_endpoint=${{ secrets.PRIMARY_ALERT_EMAIL }}"
         working-directory: ${{ env.TF_WORKING_DIR }}
         env:
           TF_VAR_region: ${{ env.AWS_REGION }}

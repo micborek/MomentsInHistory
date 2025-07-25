@@ -41,3 +41,9 @@ variable "lambda_memory_size" {
   type        = number
   default     = 128
 }
+
+variable "primary_alert_email_endpoint" {
+  description = "The email address for the primary SNS alert receiver."
+  type        = string
+  sensitive   = true
+}
