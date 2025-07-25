@@ -50,3 +50,11 @@ resource "aws_lambda_function" "generate_posts_lambda" {
   source_code_hash = data.archive_file.lambda_zip_package.output_base64sha256
 
 }
+
+resource "aws_lambda_permission" "allow_cloudwatch_to_invoke_lambda" {
+  statement_id  = "AllowExecutionFromCloudWatch"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.generate_posts_lambda.function_name
+  principal     = "events.amazonaws.com"
+  source_arn    = aws_cloudwatch_event_rule.daily_8pm_cest_rule.arn
+}
