@@ -11,7 +11,8 @@ from config import (
     AI_MODEL_REGION,
     TAGS,
     IMAGE_GENERATION_PROMPT,
-    GENERATED_POST
+    GENERATED_POST,
+    PROMPT
 )
 
 logger = logging.getLogger(__name__)
@@ -131,3 +132,7 @@ def extract_generated_data(data: dict) -> Optional[Dict[str, str]]:
     except Exception as e:
         logger.error(f'An error occurred while extracting generated data: {e}')
         return None
+
+
+def prepare_prompt(historical_period):
+    return PROMPT.format(historical_period)
