@@ -41,6 +41,7 @@ resource "aws_lambda_function" "generate_posts_lambda" {
     variables = {
       FACEBOOK_PAGE_TOKEN_SECRET_NAME = aws_secretsmanager_secret.facebook_page_token.name
       FACEBOOK_PAGE_ID_SECRET_NAME    = aws_secretsmanager_secret.facebook_page_id.name
+      SNS_TOPIC_ARN                   = aws_sns_topic.email_notifications_topic.arn
     }
   }
 

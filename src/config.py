@@ -123,3 +123,11 @@ IMAGE_GENERATION_MODEL = 'stability.sd3-5-large-v1:0'
 IMAGE_ASPECT_RATIO = "16:9" # Desired aspect ratio for generated images (e.g., "16:9", "1:1", "4:3")
 IMAGE_GENERATION_MODE = "text-to-image" # Mode of image generation (e.g., "text-to-image")
 IMAGE_OUTPUT_FORMAT = "png" # Output format for the generated image (e.g., "png", "jpeg")
+
+# --- SNS Message Configuration ---
+MESSAGE_SUBJECT = "Moments in History Notification"
+SUCCESS_MESSAGE = 'A new post was successfully posted!'
+ERROR_MESSAGE = """
+An error occurred while processing Lambda:
+
+"""
