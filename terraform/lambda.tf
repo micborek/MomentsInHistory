@@ -7,7 +7,7 @@ resource "null_resource" "install_lambda_dependencies" {
     # This trigger will change on every 'terraform apply', forcing a rebuild
     force_rebuild = timestamp()
     dependencies_hash      = filemd5("${local.lambda_source_path}/requirements.txt")
-    code_trigger_file_hash = filemd5("${local.lambda_source_path}/generate_post.py")
+    code_trigger_file_hash = filemd5("${local.lambda_source_path}/generate_post_lambda.py")
   }
 
   provisioner "local-exec" {
@@ -31,7 +31,7 @@ data "archive_file" "lambda_zip_package" {
 # AWS Lambda Function Resource
 resource "aws_lambda_function" "generate_posts_lambda" {
   function_name = "${var.resources_prefix}${var.generate_function_name}"
-  handler       = "generate_post.lambda_handler"
+  handler       = "generate_post_lambda.lambda_handler"
   runtime       = var.runtime
   role          = aws_iam_role.lambda_exec_role.arn
   timeout       = var.lambda_timeout
