@@ -1,8 +1,9 @@
-# dict keys
+# Keys for dictionaries used internally
 GENERATED_POST = "generated_post"
 TAGS = 'tags'
 IMAGE_GENERATION_PROMPT = 'image_generation_prompt'
 
+# List of historical periods for random selection
 HISTORICAL_PERIODS = [
     "Prehistory",
     "Ancient History",
@@ -80,12 +81,21 @@ HISTORICAL_PERIODS = [
     "The Digital Revolution",
 ]
 
+# --- AI Model Configuration for Text Generation (Bedrock) ---
 AI_MODEL = "amazon.nova-lite-v1:0"
+TEMPERATURE = 0.9 # Controls creativity/randomness (0.0-1.0)
+MAX_TOKEN_COUNT = 500 # Maximum number of tokens the AI can generate in response
+STOP_SEQUENCES = [] # List of strings that will cause the AI to stop generating text
 
+# --- AWS Regions for Bedrock Services ---
+AI_MODEL_REGION = "us-east-1" # Region where the primary text generation AI model is deployed
+DEFAULT_REGION = 'us-west-2' # Default region, used for the image generation AI model
+
+# --- Prompt Components for AI Text Generation ---
 PROMPT_ROLE = "You are a Social Media Historian."
 PROMPT_CONTEXT = """
-Your audience is a general Facebook audience interested in surprising or significant moments from history, presented 
-in an accessible and engaging way. The post needs to be concise (under 300 words) and end with five relevant hashtags. 
+Your audience is a general Facebook audience interested in surprising or significant moments from history, presented
+in an accessible and engaging way. The post needs to be concise (under 300 words) and end with five relevant hashtags.
 It should include some emojis.
 """
 PROMPT_PERIOD_INSTRUCTION = "1. Choose a historical event from "
@@ -97,14 +107,19 @@ PROMPT_INSTRUCTIONS = """
 PROMPT_OUTPUT_FORMAT = f"""
 Output Format: Your response MUST be a valid JSON object with the following keys:
 {{
-  "{GENERATED_POST}": "Your engaging Facebook post text goes here (max 300 words).",,
+  "{GENERATED_POST}": "Your engaging Facebook post text goes here (max 300 words).",
   "{IMAGE_GENERATION_PROMPT}": "A detailed prompt for image generation AI related to the event."
 }}
 """
-TEMPERATURE = 0.9
-MAX_TOKEN_COUNT = 500
-STOP_SEQUENCES = []
 
-AI_MODEL_REGION = "us-east-1"
-DEFAULT_REGION = 'us-west-2'
+# --- Facebook Graph API Configuration ---
 GRAPH_API_VERSION = "v23.0"
+PUBLISH_WHEN_POSTED = 'true' # Boolean string for Facebook API (true for immediate publish, false for draft)
+IMAGE_FILE_NAME = 'image.png' # Default filename for the image when posting to Facebook
+IMAGE_FILE_TYPE = 'image/png' # MIME type of the image file
+
+# --- AI Model Configuration for Image Generation (Bedrock) ---
+IMAGE_GENERATION_MODEL = 'stability.sd3-5-large-v1:0'
+IMAGE_ASPECT_RATIO = "16:9" # Desired aspect ratio for generated images (e.g., "16:9", "1:1", "4:3")
+IMAGE_GENERATION_MODE = "text-to-image" # Mode of image generation (e.g., "text-to-image")
+IMAGE_OUTPUT_FORMAT = "png" # Output format for the generated image (e.g., "png", "jpeg")

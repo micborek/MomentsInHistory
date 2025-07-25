@@ -21,8 +21,9 @@ logger.setLevel(logging.INFO)
 def lambda_handler(event, context):
     try:
         logger.info(f"Received event: {json.dumps(event)}")
+        logger.debug(f"Received context: {context}")
 
-        # prepare prompt
+        # prepare prompt about random historical period
         prepared_prompt = prepare_prompt(random.choice(HISTORICAL_PERIODS))
 
         # generate and extract AI generated data
@@ -32,7 +33,10 @@ def lambda_handler(event, context):
         # generate an image here to be passed to fb post
         image_bytes = generate_image(clean_data.get(IMAGE_GENERATION_PROMPT))
 
+        # post generated post and image to facebook
         post_to_facebook(clean_data.get(GENERATED_POST), image_bytes)
+
+        logger.info(f"Lambda finished successfully.")
 
         return {
             'statusCode': 200,

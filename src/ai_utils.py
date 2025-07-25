@@ -17,7 +17,11 @@ from config import (
     PROMPT_PERIOD_INSTRUCTION,
     PROMPT_INSTRUCTIONS,
     PROMPT_OUTPUT_FORMAT,
-    DEFAULT_REGION
+    DEFAULT_REGION,
+    IMAGE_ASPECT_RATIO,
+    IMAGE_GENERATION_MODE,
+    IMAGE_OUTPUT_FORMAT,
+    IMAGE_GENERATION_MODEL
 )
 
 logger = logging.getLogger(__name__)
@@ -48,7 +52,7 @@ def generate_new_post(prompt: str) -> Optional[Dict[str, Any]]:
             service_name='bedrock-runtime',
             region_name=AI_MODEL_REGION
         )
-        # body structure depends on a used model
+        # The 'body' structure depends on the specific AI model being used
         body = json.dumps({
             "messages": [
                 {
@@ -60,7 +64,7 @@ def generate_new_post(prompt: str) -> Optional[Dict[str, Any]]:
                     ]
                 }
             ],
-            "inferenceConfig": {  # Optional: Customize inference parameters
+            "inferenceConfig": {
                 "temperature": TEMPERATURE,
                 "maxTokens": MAX_TOKEN_COUNT,
                 "stopSequences": STOP_SEQUENCES
@@ -82,38 +86,43 @@ def generate_new_post(prompt: str) -> Optional[Dict[str, Any]]:
         return response_body
 
     except ClientError as e:
+        # ClientError specifically captures issues related to AWS service calls (e.g., invalid parameters, permissions)
         logger.error(
-            f"Bedrock API error (ClientError): {e.response['Error']['Code']} - {e.response['Error']['Message']}")
+            f"Bedrock API error (ClientError): {e.response.get('Error', {}).get('Code')} - {e.response.get('Error', {}).get('Message')}",
+            exc_info=True  # Log traceback for detailed debugging
+        )
         return None
     except json.JSONDecodeError as e:
-        logger.error(f"Failed to parse JSON response from Bedrock: {e}")
+        # Catches errors if the response body from Bedrock is not valid JSON
+        logger.error(f"Failed to parse JSON response from Bedrock: {e}", exc_info=True)
         return None
     except Exception as e:
-        logger.error(f'An error occurred while processing: {e}')
+        # Generic catch-all for any other unforeseen errors
+        logger.error(f'An unexpected error occurred in generate_new_post: {e}', exc_info=True)
         return None
 
 
 def extract_generated_data(data: dict) -> Optional[Dict[str, str]]:
     """
-    Extracts structured data (generated post, tags, image generation prompt)
+    Extracts structured data (generated post and image generation prompt)
     from the raw response dictionary received from the Bedrock AI model.
 
     This function expects the 'text' content within the Bedrock response
-    to be a JSON string wrapped in Markdown code blocks (e.g., ```json\n...\n```).
+    to be a JSON string wrapped in Markdown code blocks (e.g., ```json\\n...\\n```).
     It parses this inner JSON and extracts specific fields defined by
-    `GENERATED_POST`, `TAGS`, and `IMAGE_GENERATION_PROMPT` from the config.
+    `GENERATED_POST` and `IMAGE_GENERATION_PROMPT` from the config.
 
     Args:
         data (dict): The raw response dictionary obtained from the
                      `generate_new_post` function's successful invocation.
                      Expected to contain nested keys like
-                     `data['output']['message']['content'][0]['text']`.
+                     `data['content'][0]['text']` if using the Bedrock Messages API.
 
     Returns:
         Optional[Dict[str, str]]: A dictionary containing the extracted
-        'generated_post', 'tags', and 'image_generation_prompt' as strings,
+        'generated_post' and 'image_generation_prompt' as strings,
         if successful. Returns None if any error occurs during parsing
-        or data extraction (e.g., malformed JSON, missing keys).
+        or data extraction (e.g., malformed JSON, missing keys, unexpected structure).
     """
     try:
         text_content = data['output']['message']['content'][0]['text']
@@ -132,42 +141,110 @@ def extract_generated_data(data: dict) -> Optional[Dict[str, str]]:
         logger.info(f"Generated Image Prompt: {image_generation_prompt}")
 
         return {GENERATED_POST: generated_post, IMAGE_GENERATION_PROMPT: image_generation_prompt}
+    except (TypeError, IndexError) as e:
+        logger.error(f"Unexpected data structure from Bedrock response during extraction: {e}", exc_info=True)
+        return None
+    except json.JSONDecodeError as e:
+        logger.error(f"Failed to parse inner JSON from AI response text: {e}", exc_info=True)
+        return None
     except Exception as e:
-        logger.error(f'An error occurred while extracting generated data: {e}')
+        # Catch any other unforeseen errors during extraction
+        logger.error(f'An unexpected error occurred while extracting generated data: {e}', exc_info=True)
         return None
 
 
-def prepare_prompt(historical_period):
-    logger.info(f"Preparing prompt for: {historical_period}")
-    return PROMPT_ROLE + PROMPT_CONTEXT + PROMPT_PERIOD_INSTRUCTION + historical_period + PROMPT_INSTRUCTIONS + PROMPT_OUTPUT_FORMAT
+def prepare_prompt(historical_period: str) -> str:
+    """
+    Constructs a detailed prompt for the AI model based on a selected historical period
+    and predefined instructions.
 
-def generate_image(image_prompt:str):
-    # Initialize Bedrock Runtime client
-    bedrock_runtime = boto3.client(
-        service_name='bedrock-runtime',
-        region_name=DEFAULT_REGION
+    This function concatenates several predefined prompt components (role, context,
+    period-specific instructions, general instructions, and output format) with
+    the dynamically provided historical period to form a complete instruction
+    for the AI model.
+
+    Args:
+        historical_period (str): The specific historical period to incorporate
+                                 into the AI prompt, guiding the content generation.
+
+    Returns:
+        str: The complete, formatted prompt string ready to be sent to the AI model.
+    """
+    logger.info(f"Preparing AI prompt for historical period: '{historical_period}'")
+    # Concatenate prompt components defined in config.
+    # The order and content of these constants are crucial for AI's response format.
+    prompt_str = (
+            PROMPT_ROLE +
+            PROMPT_CONTEXT +
+            PROMPT_PERIOD_INSTRUCTION + historical_period +
+            PROMPT_INSTRUCTIONS +
+            PROMPT_OUTPUT_FORMAT
     )
 
-    body = json.dumps({
-        'prompt': image_prompt,
-        'aspect_ratio': "16:9",
-        'mode': "text-to-image",
-        'output_format': "png"
-
-    })
-
-    model_id = 'stability.sd3-5-large-v1:0'
-    logger.info(f"Invoking Bedrock model {model_id} with prompt: {image_prompt}")
-    response = bedrock_runtime.invoke_model(
-        body=body,
-        modelId=model_id,
-    )
-
-    output_body = json.loads(response["body"].read().decode("utf-8"))
-    base64_output_image = output_body["images"][0]
-    image_data = base64.b64decode(base64_output_image)
+    return prompt_str
 
 
-    logger.info(f"Successfully generated image with {model_id}")
+def generate_image(image_prompt: str) -> Optional[bytes]:
+    """
+    Generates an image using an AWS Bedrock text-to-image model based on a given prompt.
 
-    return image_data
+    This function initializes a Bedrock Runtime client, constructs a request
+    for a specified image generation model (e.g., Stability Diffusion),
+    and sends the image prompt along with desired aspect ratio and output format.
+    It decodes the base64-encoded image from the response.
+
+    Args:
+        image_prompt (str): The text description or prompt used to guide the
+                            image generation AI model.
+
+    Returns:
+        Optional[bytes]: The generated image content as bytes if successful,
+                         otherwise None if an error occurs during invocation,
+                         response parsing, or decoding.
+    """
+    try:
+        # Initialize Bedrock Runtime client for image generation
+        # Using DEFAULT_REGION as configured for image models if different from AI_MODEL_REGION
+        bedrock_runtime = boto3.client(
+            service_name='bedrock-runtime',
+            region_name=DEFAULT_REGION
+        )
+
+        # Body structure for Stability AI models via Bedrock
+        body = json.dumps({
+            'prompt': image_prompt,
+            'aspect_ratio': IMAGE_ASPECT_RATIO,  # Configurable aspect ratio
+            'mode': IMAGE_GENERATION_MODE,  # Specifying text-to-image mode
+            'output_format': IMAGE_OUTPUT_FORMAT  # Desired output image format
+        })
+
+        model_id = 'stability.sd3-5-large-v1:0'
+        logger.info(f"Invoking Bedrock model {model_id} with prompt: {image_prompt}")
+        response = bedrock_runtime.invoke_model(
+            body=body,
+            modelId=model_id,
+        )
+
+        output_body = json.loads(response["body"].read().decode("utf-8"))
+        base64_output_image = output_body["images"][0]  # Stability Diffusion returns a list of images
+        image_data = base64.b64decode(base64_output_image)
+
+        logger.info(f"Successfully generated image using model '{model_id}'.")
+
+        return image_data
+
+    except ClientError as e:
+        logger.error(
+            f"Bedrock image generation API error (ClientError): {e.response.get('Error', {}).get('Code')} - {e.response.get('Error', {}).get('Message')}",
+            exc_info=True
+        )
+        return None
+    except json.JSONDecodeError as e:
+        logger.error(f"Failed to parse JSON response from Bedrock image generation: {e}", exc_info=True)
+        return None
+    except (KeyError, IndexError) as e:
+        logger.error(f"Unexpected response structure from Bedrock image generation model: {e}", exc_info=True)
+        return None
+    except Exception as e:
+        logger.error(f'An unexpected error occurred in generate_image: {e}', exc_info=True)
+        return None
