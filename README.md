@@ -43,4 +43,4 @@ Leveraging the power of **Amazon Bedrock** foundation models, the system uses ad
 Posts and photos sent via the Facebook Graph API are successfully created (no error response), but they do not show up in the fanpage's visible feed or timeline.
 
 ## 📊 Architecture Diagram
-- To be added
+![Architecture Diagram](diagram.jpg "Architecture Diagram")
