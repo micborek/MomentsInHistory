@@ -1,11 +1,8 @@
 # MomentsInHistory 🕰️
 
-**MomentsInHistory** is an automated, AI-powered application that generates and posts historical event content (both text and images) to Facebook.  
-Leveraging the power of **Amazon Bedrock** foundation models, the system uses advanced AI to craft engaging historical narratives and generate accompanying visuals dynamically.  
-The application is fully serverless, running on **AWS Lambda** with the latest Python runtime, and is orchestrated using **AWS EventBridge** for scheduled, hands-free execution.  
-Upon successful completion of each posting cycle, it sends an email notification using **AWS SNS**.  
-All infrastructure components are provisioned and managed using **Terraform** for streamlined deployment and infrastructure consistency.  
-Deployment and CI/CD workflows are automated via **GitHub Actions**, ensuring seamless and repeatable releases.
+**MomentsInHistory** is an automated, AI-powered application that generates and posts historical event content (both text and images) to Facebook. 
+
+Leveraging the power of **Amazon Bedrock** foundation models, the system uses advanced AI to craft engaging historical narratives and generate accompanying visuals dynamically. The application is fully serverless, running on **AWS Lambda** with the latest Python runtime, and is orchestrated using **AWS EventBridge** for scheduled, hands-free execution. Upon successful completion of each posting cycle, it sends an email notification using **AWS SNS**. All infrastructure components are provisioned and managed using **Terraform** for streamlined deployment and infrastructure consistency. Deployment and CI/CD workflows are automated via **GitHub Actions**, ensuring seamless and repeatable releases.
 
 ---
 
