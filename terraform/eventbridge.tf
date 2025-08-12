@@ -6,7 +6,7 @@ resource "aws_cloudwatch_event_rule" "weekly_8pm_cest_rule" {
 
 # Define the target for the EventBridge rule (the Lambda function)
 resource "aws_cloudwatch_event_target" "lambda_target" {
-  rule      = aws_cloudwatch_event_rule.weekly_8pm_cest_rule
+  rule      = aws_cloudwatch_event_rule.weekly_8pm_cest_rule.name
   arn       = aws_lambda_function.generate_posts_lambda.arn
   target_id = "${var.resources_prefix}weekly-lambda-function-target"
 }
