@@ -57,5 +57,5 @@ resource "aws_lambda_permission" "allow_cloudwatch_to_invoke_lambda" {
   action        = "lambda:InvokeFunction"
   function_name = aws_lambda_function.generate_posts_lambda.function_name
   principal     = "events.amazonaws.com"
-  source_arn    = aws_cloudwatch_event_rule.daily_8pm_cest_rule.arn
+  source_arn    = aws_cloudwatch_event_rule.weekly_8pm_cest_rule.arn
 }
