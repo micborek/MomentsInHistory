@@ -1,7 +1,7 @@
 resource "aws_cloudwatch_event_rule" "daily_8pm_cest_rule" {
   name                = "daily-8pm-cest-lambda-trigger"
   description         = "Triggers the Lambda function daily at 8 PM CEST (18:00 UTC)"
-  schedule_expression = "cron(0 18 ? * * *)" # 18:00 UTC = 8 PM CEST
+  schedule_expression = "cron(0 18 1,4,7,10,13,16,19,22,25,28 ? * *)" # 18:00 UTC = 8 PM CEST
 }
 
 # Define the target for the EventBridge rule (the Lambda function)
