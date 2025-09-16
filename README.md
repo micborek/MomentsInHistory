@@ -14,7 +14,10 @@ Leveraging the power of **Amazon Bedrock** foundation models, the system uses ad
 - 📌 Fully **serverless** using AWS Lambda with the latest Python runtime  
 - 📌 Infrastructure managed with Terraform for easy deployment and consistency  
 
----
+![Example Post1](example1.png "Example Post1")
+![Example Post2](example2.png "Example Post2")
+![Example Post3](example3.png "Example Post3")
+
 
 ## 🛠️ Tech Stack  
 - **AWS Lambda** – Python-based serverless backend  
@@ -35,6 +38,13 @@ Leveraging the power of **Amazon Bedrock** foundation models, the system uses ad
 - Python 3.10+ (for local development and Lambda packaging)  
 - Facebook API credentials (App ID, App Secret, Access Tokens)
 
+---
+
+## 📊 Architecture Diagram
+![Architecture Diagram](diagram.jpg "Architecture Diagram")
+
+---
+
 ## ⚠️ Common Issues
 
 ### Facebook Graph API Posts Not Appearing on Fanpage Feed
@@ -42,5 +52,7 @@ Leveraging the power of **Amazon Bedrock** foundation models, the system uses ad
 **Symptom:**  
 Posts and photos sent via the Facebook Graph API are successfully created (no error response), but they do not show up in the fanpage's visible feed or timeline.
 
-## 📊 Architecture Diagram
-![Architecture Diagram](diagram.jpg "Architecture Diagram")
+### Generated posts tend to repeat in content
+
+**Symptom:**  
+If there are no distinguishing traits in a prompt, LLM tends to create the same content all over, which is unexpected taking into account high temperature
