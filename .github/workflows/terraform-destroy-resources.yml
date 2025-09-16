@@ -15,6 +15,11 @@ jobs:
     name: 'Destroy Terraform Resources'
     runs-on: ubuntu-latest
 
+    # Permissions for OIDC authentication. Required when using aws-actions/configure-aws-credentials
+    permissions:
+      id-token: write # This is required for requesting the OIDC token
+      contents: read  # This is required for checkout
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
