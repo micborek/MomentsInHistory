@@ -1,0 +1,48 @@
+# my-project/.github/workflows/terraform-destroy-resources.yml
+name: Terraform Destroy
+
+on:
+  workflow_dispatch: # manual trigger
+
+env:
+  TF_WORKING_DIR: ./terraform # working directory for Terraform commands
+  AWS_REGION: us-west-2
+  TF_CLI_ARGS: "-no-color"
+  TF_IN_AUTOMATION: "true"
+
+jobs:
+  terraform-destroy:
+    name: 'Destroy Terraform Resources'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: latest
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4 # Action to configure AWS credentials using OIDC
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }} # IAM Role ARN from GitHub Secrets
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Terraform Init
+        id: init
+        run: terraform init -backend-config="region=${{ env.AWS_REGION }}"
+        working-directory: ${{ env.TF_WORKING_DIR }} # Execute command in the terraform directory
+
+      - name: Terraform Plan (Destroy)
+        run: terraform plan -destroy -out=tfplan
+        working-directory: ${{ env.TF_WORKING_DIR }}
+        env:
+          TF_VAR_region: ${{ env.AWS_REGION }}
+
+      - name: Terraform Destroy
+        run: terraform apply -auto-approve tfplan
+        working-directory: ${{ env.TF_WORKING_DIR }}
+        env:
+          TF_VAR_region: ${{ env.AWS_REGION }}
